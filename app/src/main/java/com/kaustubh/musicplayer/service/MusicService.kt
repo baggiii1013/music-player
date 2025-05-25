@@ -1,0 +1,194 @@
+package com.kaustubh.musicplayer.service
+
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.app.Service
+import android.content.Intent
+import android.media.MediaPlayer
+import android.os.Binder
+import android.os.Build
+import android.os.IBinder
+import androidx.core.app.NotificationCompat
+import com.kaustubh.musicplayer.MainActivity
+import com.kaustubh.musicplayer.R
+import com.kaustubh.musicplayer.models.Song
+
+class MusicService : Service() {
+    
+    companion object {
+        private const val NOTIFICATION_ID = 1
+        private const val CHANNEL_ID = "music_playback_channel"
+    }
+    
+    private var mediaPlayer: MediaPlayer? = null
+    private var currentSong: Song? = null
+    private val binder = MusicBinder()
+    
+    inner class MusicBinder : Binder() {
+        fun getService(): MusicService = this@MusicService
+    }
+    
+    override fun onCreate() {
+        super.onCreate()
+        createNotificationChannel()
+    }
+    
+    override fun onBind(intent: Intent?): IBinder {
+        return binder
+    }
+    
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        when (intent?.action) {
+            "PLAY_PAUSE" -> playPause()
+            "NEXT" -> playNext()
+            "PREVIOUS" -> playPrevious()
+            "STOP" -> stopSelf()
+        }
+        return START_STICKY
+    }
+    
+    fun playSong(song: Song) {
+        try {
+            mediaPlayer?.release()
+            
+            mediaPlayer = MediaPlayer().apply {
+                setDataSource(applicationContext, song.uri)
+                prepareAsync()
+                setOnPreparedListener {
+                    start()
+                    currentSong = song
+                    startForeground(NOTIFICATION_ID, createNotification())
+                }
+                setOnCompletionListener {
+                    playNext()
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+    
+    fun playPause() {
+        mediaPlayer?.let { player ->
+            if (player.isPlaying) {
+                player.pause()
+            } else {
+                player.start()
+            }
+            updateNotification()
+        }
+    }
+    
+    fun playNext() {
+        // Implement next song logic
+    }
+    
+    fun playPrevious() {
+        // Implement previous song logic
+    }
+    
+    fun isPlaying(): Boolean {
+        return mediaPlayer?.isPlaying ?: false
+    }
+    
+    fun getCurrentPosition(): Int {
+        return mediaPlayer?.currentPosition ?: 0
+    }
+    
+    fun getDuration(): Int {
+        return mediaPlayer?.duration ?: 0
+    }
+    
+    fun seekTo(position: Int) {
+        mediaPlayer?.seekTo(position)
+    }
+    
+    fun getAudioSessionId(): Int {
+        return mediaPlayer?.audioSessionId ?: 0
+    }
+    
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                CHANNEL_ID,
+                getString(R.string.notification_channel_name),
+                NotificationManager.IMPORTANCE_LOW
+            ).apply {
+                description = getString(R.string.notification_channel_description)
+                setShowBadge(false)
+            }
+            
+            val notificationManager = getSystemService(NotificationManager::class.java)
+            notificationManager.createNotificationChannel(channel)
+        }
+    }
+    
+    private fun createNotification(): Notification {
+        val intent = Intent(this, MainActivity::class.java)
+        val pendingIntent = PendingIntent.getActivity(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        
+        val playPauseAction = if (isPlaying()) {
+            NotificationCompat.Action(
+                R.drawable.ic_pause,
+                getString(R.string.pause),
+                createPendingIntent("PLAY_PAUSE")
+            )
+        } else {
+            NotificationCompat.Action(
+                R.drawable.ic_play,
+                getString(R.string.play),
+                createPendingIntent("PLAY_PAUSE")
+            )
+        }
+        
+        return NotificationCompat.Builder(this, CHANNEL_ID)
+            .setContentTitle(currentSong?.title ?: getString(R.string.no_song_playing))
+            .setContentText(currentSong?.artist ?: getString(R.string.unknown_artist))
+            .setSmallIcon(R.drawable.ic_play)
+            .setContentIntent(pendingIntent)
+            .addAction(
+                R.drawable.ic_skip_previous,
+                getString(R.string.previous),
+                createPendingIntent("PREVIOUS")
+            )
+            .addAction(playPauseAction)
+            .addAction(
+                R.drawable.ic_skip_next,
+                getString(R.string.next),
+                createPendingIntent("NEXT")
+            )
+            .setStyle(
+                androidx.media.app.NotificationCompat.MediaStyle()
+                    .setShowActionsInCompactView(0, 1, 2)
+            )
+            .setOnlyAlertOnce(true)
+            .build()
+    }
+    
+    private fun createPendingIntent(action: String): PendingIntent {
+        val intent = Intent(this, MusicService::class.java).apply {
+            this.action = action
+        }
+        return PendingIntent.getService(
+            this, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+    }
+    
+    private fun updateNotification() {
+        val notification = createNotification()
+        val notificationManager = getSystemService(NotificationManager::class.java)
+        notificationManager.notify(NOTIFICATION_ID, notification)
+    }
+    
+    override fun onDestroy() {
+        super.onDestroy()
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+}

@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name">Music Player</string>
+    
+    <!-- Main navigation -->
+    <string name="home">Home</string>
+    <string name="search">Search</string>
+    <string name="library">Your Library</string>
+    <string name="equalizer">Equalizer</string>
+    
+    <!-- Player controls -->
+    <string name="play">Play</string>
+    <string name="pause">Pause</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="shuffle">Shuffle</string>
+    <string name="repeat">Repeat</string>
+    
+    <!-- Placeholders -->
+    <string name="no_song_playing">No song playing</string>
+    <string name="unknown_artist">Unknown Artist</string>
+    <string name="unknown_album">Unknown Album</string>
+    
+    <!-- Equalizer -->
+    <string name="equalizer_title">Equalizer</string>
+    <string name="bass_boost">Bass Boost</string>
+    <string name="virtualization">Virtualization</string>
+    <string name="preset">Preset</string>
+    
+    <!-- Notifications -->
+    <string name="notification_channel_name">Music Playback</string>
+    <string name="notification_channel_description">Controls for music playback</string>
+</resources>
