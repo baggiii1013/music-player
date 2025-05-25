@@ -16,14 +16,15 @@ import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.models.Song
 
 class MusicService : Service() {
-    
-    companion object {
+      companion object {
         private const val NOTIFICATION_ID = 1
         private const val CHANNEL_ID = "music_playback_channel"
     }
     
     private var mediaPlayer: MediaPlayer? = null
     private var currentSong: Song? = null
+    private var currentPlaylist: List<Song> = emptyList()
+    private var currentSongIndex: Int = -1
     private val binder = MusicBinder()
     
     inner class MusicBinder : Binder() {
@@ -48,10 +49,12 @@ class MusicService : Service() {
         }
         return START_STICKY
     }
-    
-    fun playSong(song: Song) {
+      fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
         try {
             mediaPlayer?.release()
+            
+            currentPlaylist = playlist
+            currentSongIndex = playlist.indexOf(song)
             
             mediaPlayer = MediaPlayer().apply {
                 setDataSource(applicationContext, song.uri)
@@ -62,7 +65,13 @@ class MusicService : Service() {
                     startForeground(NOTIFICATION_ID, createNotification())
                 }
                 setOnCompletionListener {
-                    playNext()
+                    if (isRepeatEnabled) {
+                        // Repeat current song
+                        seekTo(0)
+                        start()
+                    } else {
+                        playNext()
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -79,14 +88,67 @@ class MusicService : Service() {
             }
             updateNotification()
         }
+    }    fun nextSong() {
+        if (currentPlaylist.isNotEmpty() && currentSongIndex < currentPlaylist.size - 1) {
+            currentSongIndex++
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
+            // If shuffle is on, play a random song
+            currentSongIndex = (0 until currentPlaylist.size).random()
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        }
+    }
+    
+    fun previousSong() {
+        if (currentPlaylist.isNotEmpty() && currentSongIndex > 0) {
+            currentSongIndex--
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
+            // If shuffle is on, play a random song
+            currentSongIndex = (0 until currentPlaylist.size).random()
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        }
     }
     
     fun playNext() {
-        // Implement next song logic
+        nextSong()
     }
     
     fun playPrevious() {
-        // Implement previous song logic
+        previousSong()
+    }
+    
+    fun pauseMusic() {
+        mediaPlayer?.pause()
+        updateNotification()
+    }
+    
+    fun resumeMusic() {
+        mediaPlayer?.start()
+        updateNotification()
+    }
+    
+    fun getCurrentSong(): Song? {
+        return currentSong
+    }
+    
+    private var isShuffleEnabled = false
+    private var isRepeatEnabled = false
+    
+    fun toggleShuffle() {
+        isShuffleEnabled = !isShuffleEnabled
+    }
+    
+    fun toggleRepeat() {
+        isRepeatEnabled = !isRepeatEnabled
+    }
+    
+    fun isShuffleEnabled(): Boolean {
+        return isShuffleEnabled
+    }
+    
+    fun isRepeatEnabled(): Boolean {
+        return isRepeatEnabled
     }
     
     fun isPlaying(): Boolean {
@@ -104,9 +166,16 @@ class MusicService : Service() {
     fun seekTo(position: Int) {
         mediaPlayer?.seekTo(position)
     }
-    
-    fun getAudioSessionId(): Int {
+      fun getAudioSessionId(): Int {
         return mediaPlayer?.audioSessionId ?: 0
+    }
+    
+    fun setPlaylist(playlist: List<Song>) {
+        currentPlaylist = playlist
+    }
+    
+    fun getCurrentPlaylist(): List<Song> {
+        return currentPlaylist
     }
     
     private fun createNotificationChannel() {

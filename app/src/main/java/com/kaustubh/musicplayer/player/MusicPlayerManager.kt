@@ -24,15 +24,26 @@ class MusicPlayerManager private constructor(private val context: Context) {
     private val _isPlaying = MutableLiveData<Boolean>(false)
     private val _currentPosition = MutableLiveData<Int>(0)
     private val _currentSongLiveData = MutableLiveData<Song?>()
+    private val _allSongsLiveData = MutableLiveData<List<Song>>(emptyList())
     
     val isPlaying: LiveData<Boolean> = _isPlaying
     val currentPosition: LiveData<Int> = _currentPosition
     val currentSongLiveData: LiveData<Song?> = _currentSongLiveData
+    val allSongsLiveData: LiveData<List<Song>> = _allSongsLiveData
     
-    fun playSong(song: Song) {
+    private var isShuffleEnabled = false
+    private var isRepeatEnabled = false
+    private var currentPlaylist: List<Song> = emptyList()
+    private var currentSongIndex: Int = -1
+    
+    fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
         try {
             // Release previous MediaPlayer
             mediaPlayer?.release()
+            
+            // Update playlist info
+            currentPlaylist = playlist
+            currentSongIndex = playlist.indexOf(song)
             
             // Create new MediaPlayer
             mediaPlayer = MediaPlayer().apply {
@@ -45,8 +56,13 @@ class MusicPlayerManager private constructor(private val context: Context) {
                     _currentSongLiveData.value = song
                 }
                 setOnCompletionListener {
-                    _isPlaying.value = false
-                    _currentPosition.value = 0
+                    if (isRepeatEnabled) {
+                        // Repeat current song
+                        seekTo(0)
+                        start()
+                    } else {
+                        nextSong()
+                    }
                 }
             }
         } catch (e: Exception) {
@@ -95,6 +111,50 @@ class MusicPlayerManager private constructor(private val context: Context) {
     
     fun getCurrentSong(): Song? {
         return currentSong
+    }
+    
+    fun updateAllSongs(songs: List<Song>) {
+        _allSongsLiveData.value = songs
+    }
+    
+    fun toggleShuffle() {
+        isShuffleEnabled = !isShuffleEnabled
+    }
+    
+    fun toggleRepeat() {
+        isRepeatEnabled = !isRepeatEnabled
+    }
+    
+    fun isShuffleEnabled(): Boolean {
+        return isShuffleEnabled
+    }
+    
+    fun isRepeatEnabled(): Boolean {
+        return isRepeatEnabled
+    }
+    
+    fun setPlaylist(playlist: List<Song>) {
+        currentPlaylist = playlist
+    }
+    
+    fun nextSong() {
+        if (currentPlaylist.isNotEmpty() && currentSongIndex < currentPlaylist.size - 1) {
+            currentSongIndex++
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
+            currentSongIndex = (0 until currentPlaylist.size).random()
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        }
+    }
+    
+    fun previousSong() {
+        if (currentPlaylist.isNotEmpty() && currentSongIndex > 0) {
+            currentSongIndex--
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
+            currentSongIndex = (0 until currentPlaylist.size).random()
+            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+        }
     }
     
     fun release() {

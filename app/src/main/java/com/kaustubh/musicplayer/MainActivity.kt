@@ -14,13 +14,16 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.kaustubh.musicplayer.fragments.EqualizerFragment
 import com.kaustubh.musicplayer.fragments.HomeFragment
+import com.kaustubh.musicplayer.fragments.SearchFragment
+import com.kaustubh.musicplayer.fragments.LibraryFragment
 import com.kaustubh.musicplayer.service.MusicService
+import com.kaustubh.musicplayer.ui.MiniPlayerController
 
 class MainActivity : AppCompatActivity() {
     
     private lateinit var bottomNavigation: BottomNavigationView
     private lateinit var miniPlayer: View
-    private lateinit var fullPlayer: View
+    private lateinit var miniPlayerController: MiniPlayerController
     
     companion object {
         private const val PERMISSION_REQUEST_CODE = 123
@@ -45,7 +48,7 @@ class MainActivity : AppCompatActivity() {
     private fun initViews() {
         bottomNavigation = findViewById(R.id.bottom_navigation)
         miniPlayer = findViewById(R.id.mini_player)
-        fullPlayer = findViewById(R.id.full_player)
+        miniPlayerController = MiniPlayerController(miniPlayer, this, this)
     }
     
     private fun setupWindowInsets() {
@@ -82,6 +85,14 @@ class MainActivity : AppCompatActivity() {
                     loadFragment(HomeFragment())
                     true
                 }
+                R.id.nav_search -> {
+                    loadFragment(SearchFragment())
+                    true
+                }
+                R.id.nav_library -> {
+                    loadFragment(LibraryFragment())
+                    true
+                }
                 R.id.nav_equalizer -> {
                     loadFragment(EqualizerFragment())
                     true
@@ -89,6 +100,9 @@ class MainActivity : AppCompatActivity() {
                 else -> false
             }
         }
+        
+        // Set default selection
+        bottomNavigation.selectedItemId = R.id.nav_home
     }
     
     private fun loadFragment(fragment: Fragment) {
@@ -98,18 +112,10 @@ class MainActivity : AppCompatActivity() {
     }
     
     fun showMiniPlayer() {
-        miniPlayer.visibility = View.VISIBLE
+        miniPlayerController.show()
     }
     
     fun hideMiniPlayer() {
-        miniPlayer.visibility = View.GONE
-    }
-    
-    fun showFullPlayer() {
-        fullPlayer.visibility = View.VISIBLE
-    }
-    
-    fun hideFullPlayer() {
-        fullPlayer.visibility = View.GONE
+        miniPlayerController.hide()
     }
 }

@@ -10,8 +10,8 @@ import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.models.Song
 
 class SongAdapter(
-    private val songs: List<Song>,
-    private val onSongClick: (Song) -> Unit
+    private var songs: MutableList<Song>,
+    private val onSongClick: (Song, List<Song>) -> Unit
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
     
     private var currentPlayingSongId: Long? = null
@@ -22,12 +22,11 @@ class SongAdapter(
         val artist: TextView = itemView.findViewById(R.id.song_artist)
         val duration: TextView = itemView.findViewById(R.id.song_duration)
         val playingIndicator: ImageView = itemView.findViewById(R.id.playing_indicator)
-        
-        init {
+          init {
             itemView.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
-                    onSongClick(songs[position])
+                    onSongClick(songs[position], songs.toList())
                 }
             }
         }
@@ -60,8 +59,7 @@ class SongAdapter(
     }
     
     override fun getItemCount(): Int = songs.size
-    
-    fun setCurrentPlayingSong(songId: Long?) {
+      fun setCurrentPlayingSong(songId: Long?) {
         val oldPosition = songs.indexOfFirst { it.id == currentPlayingSongId }
         val newPosition = songs.indexOfFirst { it.id == songId }
         
@@ -73,5 +71,11 @@ class SongAdapter(
         if (newPosition != -1) {
             notifyItemChanged(newPosition)
         }
+    }
+    
+    fun updateSongs(newSongs: List<Song>) {
+        songs.clear()
+        songs.addAll(newSongs)
+        notifyDataSetChanged()
     }
 }

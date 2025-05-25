@@ -67,16 +67,16 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Sort"
             android:src="@drawable/ic_sort"
-            app:tint="@color/text_secondary" />
+            app:tint="@color/text_secondary" />    </LinearLayout>
 
-    </LinearLayout>
-
-    <!-- Songs RecyclerView -->    <androidx.recyclerview.widget.RecyclerView
+    <!-- Songs RecyclerView -->
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/songs_recycler_view"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:clipToPadding="false"
+        android:paddingHorizontal="16dp"
         android:paddingBottom="16dp" />
 
 </LinearLayout>
