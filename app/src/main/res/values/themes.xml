@@ -1,42 +1,85 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.MusicPlayer" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <item name="colorPrimary">@color/lavender_primary</item>
-        <item name="colorPrimaryVariant">@color/lavender_dark</item>
-        <item name="colorSecondary">@color/lavender_accent</item>
-        <item name="colorSecondaryVariant">@color/lavender_light</item>
-        <item name="android:colorBackground">@color/background_primary</item>
-        <item name="colorSurface">@color/surface_primary</item>
+    <style name="Base.Theme.MusicPlayer" parent="Theme.Material3.DayNight.NoActionBar">        <!-- Apple Music Theme Colors -->
+        <item name="colorPrimary">@color/apple_red</item>
+        <item name="colorPrimaryVariant">@color/apple_red_dark</item>
+        <item name="colorSecondary">@color/apple_red</item>
+        <item name="colorSecondaryVariant">@color/apple_red_light</item>        <item name="android:colorBackground">@color/background_primary</item>
+        <item name="colorSurface">@color/apple_surface_primary</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="colorOnBackground">@color/text_primary</item>
         <item name="colorOnSurface">@color/text_primary</item>
-        <item name="android:statusBarColor">@color/background_primary</item>
-        <item name="android:navigationBarColor">@color/background_primary</item>
+        <item name="android:statusBarColor">@color/apple_status_bar</item>
+        <item name="android:navigationBarColor">@color/apple_surface_primary</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:enforceStatusBarContrast">true</item>
+        <item name="android:enforceNavigationBarContrast">true</item>
     </style>
 
     <style name="Theme.MusicPlayer" parent="Base.Theme.MusicPlayer" />
     
-    <!-- Card style -->
-    <style name="CardStyle">
+        <!-- Apple Music Card Style -->
+    <style name="AppleMusicCardStyle">
         <item name="android:layout_margin">8dp</item>
         <item name="cardCornerRadius">12dp</item>
-        <item name="cardElevation">4dp</item>
-        <item name="cardBackgroundColor">@color/card_background</item>
+        <item name="cardElevation">8dp</item>
+        <item name="cardBackgroundColor">@color/apple_surface_primary</item>
     </style>
     
-    <!-- Button styles -->
-    <style name="PrimaryButton" parent="Widget.Material3.Button">
-        <item name="backgroundTint">@color/button_primary</item>
+    <!-- Apple Music Button Styles -->
+    <style name="AppleMusicPrimaryButton" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/apple_red</item>
         <item name="android:textColor">@color/white</item>
         <item name="cornerRadius">20dp</item>
+        <item name="android:textStyle">bold</item>
     </style>
     
-    <style name="SecondaryButton" parent="Widget.Material3.Button.OutlinedButton">
-        <item name="strokeColor">@color/lavender_primary</item>
-        <item name="android:textColor">@color/lavender_primary</item>
+    <style name="AppleMusicSecondaryButton" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/apple_red</item>
+        <item name="android:textColor">@color/apple_red</item>
         <item name="cornerRadius">20dp</item>
+        <item name="android:textStyle">bold</item>
+    </style>    <!-- Apple Music Bottom Navigation Indicator -->
+    <style name="AppleMusicBottomNavIndicator">
+        <item name="android:width">64dp</item>
+        <item name="android:height">28dp</item>
+        <item name="cornerRadius">14dp</item>
+        <item name="android:color">@color/apple_red</item>
+        <item name="android:alpha">0.08</item>
     </style>
+      <!-- Enhanced Apple Music Bottom Navigation Style -->
+    <style name="AppleMusicBottomNavStyle" parent="Widget.Material3.BottomNavigationView">
+        <item name="materialThemeOverlay">@style/AppleMusicBottomNavThemeOverlay</item>
+        <item name="itemIconTint">@color/apple_music_nav_selector</item>
+        <item name="itemTextColor">@color/apple_music_nav_selector</item>
+        <item name="itemBackground">@drawable/apple_nav_item_background</item>
+        <item name="elevation">16dp</item>
+        <item name="itemTextAppearanceActive">@style/AppleMusicBottomNavTextActive</item>
+        <item name="itemTextAppearanceInactive">@style/AppleMusicBottomNavTextInactive</item>
+    </style>
+    
+    <style name="AppleMusicBottomNavThemeOverlay">
+        <item name="colorSurface">@color/apple_surface_primary</item>
+        <item name="colorOnSurface">@color/apple_text_primary</item>
+    </style>
+
+    <!-- Bottom Navigation Text Styles -->
+    <style name="AppleMusicBottomNavTextActive" parent="@style/TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+    
+    <style name="AppleMusicBottomNavTextInactive" parent="@style/TextAppearance.Material3.LabelSmall">
+        <item name="android:textSize">10sp</item>
+        <item name="android:textStyle">normal</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
+
+    <!-- Legacy styles for backward compatibility -->
+    <style name="CardStyle" parent="AppleMusicCardStyle" />
+    <style name="PrimaryButton" parent="AppleMusicPrimaryButton" />
+    <style name="SecondaryButton" parent="AppleMusicSecondaryButton" />
 </resources>

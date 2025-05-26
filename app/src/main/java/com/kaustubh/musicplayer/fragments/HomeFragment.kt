@@ -8,6 +8,7 @@ import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -21,6 +22,7 @@ class HomeFragment : Fragment() {
     
     private lateinit var recyclerView: RecyclerView
     private lateinit var songAdapter: SongAdapter
+    private lateinit var searchButton: ImageButton
     private val songs = mutableListOf<Song>()
     
     override fun onCreateView(
@@ -30,18 +32,28 @@ class HomeFragment : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.fragment_home, container, false)
     }
-    
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+      override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
         initViews(view)
         setupRecyclerView()
+        setupClickListeners()
         loadSongs()
     }
     
     private fun initViews(view: View) {
         recyclerView = view.findViewById(R.id.songs_recycler_view)
-    }    private fun setupRecyclerView() {
+        searchButton = view.findViewById(R.id.search_button)
+    }
+    
+    private fun setupClickListeners() {
+        searchButton.setOnClickListener {
+            // Navigate to search fragment
+            (activity as? MainActivity)?.let { mainActivity ->
+                mainActivity.switchToSearchTab()
+            }
+        }
+    }private fun setupRecyclerView() {
         songAdapter = SongAdapter(songs) { song, playlist ->
             // Play selected song with the full playlist
             MusicPlayerManager.getInstance(requireContext()).playSong(song, songs)

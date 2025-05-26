@@ -3,37 +3,69 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- Spotify-inspired Lavender Theme -->
-    <color name="lavender_primary">#8A7CA8</color>
-    <color name="lavender_light">#B39DDB</color>
-    <color name="lavender_dark">#5E4B75</color>
-    <color name="lavender_accent">#9C88D4</color>
-    <color name="lavender">#8A7CA8</color>
+    <!-- Apple Music Color Scheme -->
+    <color name="apple_red">#FF073A</color>
+    <color name="apple_red_light">#FF6B99</color>
+    <color name="apple_red_dark">#CC0029</color>
+    <color name="apple_pink">#FF6B99</color>
+    <color name="apple_orange">#FF9F0A</color>
+    <color name="apple_blue">#007AFF</color>
+    <color name="apple_teal">#5AC8FA</color>
+    <color name="apple_purple">#5856D6</color>
     
-    <color name="background_primary">#0F0F0F</color>
-    <color name="background_secondary">#181818</color>
-    <color name="surface_primary">#1F1F1F</color>
-    <color name="surface_secondary">#2A2A2A</color>
+    <!-- Apple Music Surfaces and Backgrounds -->
+    <color name="apple_surface_primary">#1C1C1E</color>
+    <color name="apple_surface_secondary">#2C2C2E</color>
+    <color name="apple_status_bar">#0D0D0F</color>
+    <color name="apple_text_primary">#FFFFFF</color>
+    <color name="apple_text_secondary">#8E8E93</color>
+    <color name="apple_text_tertiary">#48484A</color>
     
+    <!-- Main Theme Colors -->
+    <color name="lavender_primary">#FF073A</color>
+    <color name="lavender_light">#FF6B99</color>
+    <color name="lavender_dark">#CC0029</color>
+    <color name="lavender_accent">#FF9F0A</color>
+    <color name="lavender">#FF073A</color>
+    
+    <!-- Dark Mode Apple Music Backgrounds -->
+    <color name="background_primary">#000000</color>
+    <color name="background_secondary">#0A0A0A</color>
+    <color name="surface_primary">#1C1C1E</color>
+    <color name="surface_secondary">#2C2C2E</color>
+    <color name="surface_tertiary">#3A3A3C</color>
+    <color name="surface_card">#1C1C1E</color>
+    
+    <!-- Text Colors (Apple Music Style) -->
     <color name="text_primary">#FFFFFF</color>
-    <color name="text_secondary">#A7A7A7</color>
-    <color name="text_tertiary">#6A6A6A</color>
-    <color name="gray_light">#6A6A6A</color>
+    <color name="text_secondary">#AEAEB2</color>
+    <color name="text_tertiary">#8E8E93</color>
+    <color name="gray_light">#8E8E93</color>
     
     <!-- Card backgrounds -->
-    <color name="card_background">#1F1F1F</color>
-    <color name="card_background_hover">#2A2A2A</color>
+    <color name="card_background">#1C1C1E</color>
+    <color name="card_background_hover">#2C2C2E</color>
     
     <!-- Button colors -->
-    <color name="button_primary">#8A7CA8</color>
-    <color name="button_secondary">#5E4B75</color>
+    <color name="button_primary">#FF073A</color>
+    <color name="button_secondary">#2C2C2E</color>
+    <color name="button_tertiary">#3A3A3C</color>
     
     <!-- Status colors -->
-    <color name="success">#1DB954</color>
-    <color name="error">#E22134</color>
-    <color name="warning">#FFA726</color>
+    <color name="success">#30D158</color>
+    <color name="error">#FF3B30</color>
+    <color name="warning">#FF9F0A</color>
     
-    <!-- Gradient colors for better visual appeal -->
-    <color name="gradient_start">#8A7CA8</color>
-    <color name="gradient_end">#5E4B75</color>
+    <!-- Gradient colors for Apple Music vibes -->
+    <color name="gradient_start">#FF073A</color>
+    <color name="gradient_end">#FF6B99</color>
+    <color name="gradient_center">#FF9F0A</color>
+    
+    <!-- Apple Music specific -->
+    <color name="music_player_background">#1C1C1E</color>
+    <color name="now_playing_background">#2C2C2E</color>
+    <color name="album_art_shadow">#00000080</color>
+      <!-- Bottom navigation -->
+    <color name="bottom_nav_selected">#FF073A</color>
+    <color name="bottom_nav_unselected">#8E8E93</color>
 </resources>

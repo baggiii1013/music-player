@@ -27,13 +27,11 @@ class MainActivity : AppCompatActivity() {
     
     companion object {
         private const val PERMISSION_REQUEST_CODE = 123
-    }
-
-    override fun onCreate(savedInstanceState: Bundle?) {
+    }    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         
+        setupStatusBar()
         initViews()
         setupWindowInsets()
         requestPermissions()
@@ -44,17 +42,48 @@ class MainActivity : AppCompatActivity() {
             loadFragment(HomeFragment())
         }
     }
+      private fun setupStatusBar() {
+        // Configure status bar for Apple Music style
+        window.statusBarColor = ContextCompat.getColor(this, R.color.apple_status_bar)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.apple_surface_primary)
+        
+        // Make status bar content light (white icons/text) for dark background
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            // Clear light status bar flag for dark background
+            var flags = window.decorView.systemUiVisibility
+            flags = flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
+            window.decorView.systemUiVisibility = flags
+        }
+        
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            // Clear light navigation bar flag for dark background
+            var flags = window.decorView.systemUiVisibility
+            flags = flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
+            window.decorView.systemUiVisibility = flags
+        }
+    }
     
     private fun initViews() {
         bottomNavigation = findViewById(R.id.bottom_navigation)
         miniPlayer = findViewById(R.id.mini_player)
         miniPlayerController = MiniPlayerController(miniPlayer, this, this)
     }
-    
-    private fun setupWindowInsets() {
+      private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            
+            // Apply proper padding to ensure status bar is visible
+            v.setPadding(systemBars.left, 0, systemBars.right, 0)
+            
+            // Ensure bottom navigation respects navigation bar
+            bottomNavigation.setPadding(
+                bottomNavigation.paddingLeft,
+                bottomNavigation.paddingTop,
+                bottomNavigation.paddingRight,
+                bottomNavigation.paddingBottom + systemBars.bottom
+            )
+            
             insets
         }
     }
@@ -109,6 +138,11 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, fragment)
             .commit()
+    }
+    
+    fun switchToSearchTab() {
+        bottomNavigation.selectedItemId = R.id.nav_search
+        loadFragment(SearchFragment())
     }
     
     fun showMiniPlayer() {

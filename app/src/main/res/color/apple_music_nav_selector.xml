@@ -2,6 +2,10 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Selected state (active tab) -->
     <item android:color="@color/apple_red" android:state_checked="true" />
+    <!-- Pressed state -->
+    <item android:color="@color/apple_red_light" android:state_pressed="true" />
+    <!-- Focused state -->
+    <item android:color="@color/apple_red_light" android:state_focused="true" />
     <!-- Default state (inactive tab) -->
     <item android:color="@color/apple_text_secondary" />
 </selector>

@@ -2,10 +2,10 @@
     <string name="app_name">Music Player</string>
     
     <!-- Main navigation -->
-    <string name="home">Home</string>
-    <string name="search">Search</string>
-    <string name="library">Your Library</string>
-    <string name="equalizer">Equalizer</string>
+    <string name="home">Listen Now</string>
+    <string name="search">Browse</string>
+    <string name="library">Library</string>
+    <string name="equalizer">Radio</string>
     
     <!-- Player controls -->
     <string name="play">Play</string>
