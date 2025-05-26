@@ -29,4 +29,10 @@
     <!-- Notifications -->
     <string name="notification_channel_name">Music Playback</string>
     <string name="notification_channel_description">Controls for music playback</string>
+    
+    <!-- Quick Settings Tile -->
+    <string name="music_quick_tile_label">Music Player</string>
+    <string name="quick_tile_no_music">Tap to open Music Player</string>
+    <string name="quick_tile_playing">Playing</string>
+    <string name="quick_tile_paused">Paused</string>
 </resources>
