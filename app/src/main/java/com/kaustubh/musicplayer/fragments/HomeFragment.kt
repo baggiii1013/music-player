@@ -17,6 +17,7 @@ import com.kaustubh.musicplayer.adapters.SongAdapter
 import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.player.MusicPlayerManager
 import com.kaustubh.musicplayer.MainActivity
+import com.kaustubh.musicplayer.utils.SongUtils
 
 class HomeFragment : Fragment() {
     
@@ -53,14 +54,30 @@ class HomeFragment : Fragment() {
                 mainActivity.switchToSearchTab()
             }
         }
-    }private fun setupRecyclerView() {
-        songAdapter = SongAdapter(songs) { song, playlist ->
-            // Play selected song with the full playlist
-            MusicPlayerManager.getInstance(requireContext()).playSong(song, songs)
-            
-            // Show mini player
-            (activity as? MainActivity)?.showMiniPlayer()
-        }
+    }    private fun setupRecyclerView() {
+        songAdapter = SongAdapter(
+            songs = songs,
+            onSongClick = { song, playlist ->
+                // Play selected song with the full playlist
+                MusicPlayerManager.getInstance(requireContext()).playSong(song, songs)
+                
+                // Show mini player
+                (activity as? MainActivity)?.showMiniPlayer()
+            },
+            onShareSong = { song ->
+                SongUtils.shareSong(requireContext(), song)
+            },
+            onDeleteSong = { song ->
+                SongUtils.deleteSong(requireContext(), song) { deletedSong ->
+                    // Remove from adapter and update the main songs list
+                    songAdapter.removeSong(deletedSong)
+                    songs.removeAll { it.id == deletedSong.id }
+                    
+                    // Update MusicPlayerManager with updated song list
+                    MusicPlayerManager.getInstance(requireContext()).updateAllSongs(songs)
+                }
+            }
+        )
         
         recyclerView.apply {
             layoutManager = LinearLayoutManager(context)

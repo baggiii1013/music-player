@@ -14,6 +14,7 @@ import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.adapters.SongAdapter
 import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.player.MusicPlayerManager
+import com.kaustubh.musicplayer.utils.SongUtils
 
 class SearchFragment : Fragment() {
     
@@ -55,11 +56,30 @@ class SearchFragment : Fragment() {
             }
             
             override fun afterTextChanged(s: Editable?) {}
-        })
-    }    private fun setupRecyclerView() {
-        songAdapter = SongAdapter(filteredSongs.toMutableList()) { song, playlist ->
-            musicPlayerManager.playSong(song, allSongs)
-        }
+        })    }    private fun setupRecyclerView() {
+        songAdapter = SongAdapter(
+            songs = filteredSongs.toMutableList(),
+            onSongClick = { song, playlist ->
+                // Play selected song
+                musicPlayerManager.playSong(song, allSongs)
+            },
+            onShareSong = { song ->
+                SongUtils.shareSong(requireContext(), song)
+            },
+            onDeleteSong = { song ->
+                SongUtils.deleteSong(requireContext(), song) { deletedSong ->
+                    // Remove from adapter and update the lists
+                    songAdapter.removeSong(deletedSong)
+                    
+                    // Update the main allSongs list and filtered list
+                    allSongs = allSongs.filter { it.id != deletedSong.id }
+                    filteredSongs = filteredSongs.filter { it.id != deletedSong.id }
+                    
+                    // Update MusicPlayerManager with updated song list
+                    musicPlayerManager.updateAllSongs(allSongs)
+                }
+            }
+        )
         
         searchResultsRecyclerView.apply {
             layoutManager = LinearLayoutManager(context)

@@ -35,4 +35,16 @@
     <string name="quick_tile_no_music">Tap to open Music Player</string>
     <string name="quick_tile_playing">Playing</string>
     <string name="quick_tile_paused">Paused</string>
+    
+    <!-- Song options -->
+    <string name="share_song">Share</string>
+    <string name="delete_song">Delete</string>
+    <string name="confirm_delete_title">Delete Song</string>
+    <string name="confirm_delete_message">Are you sure you want to delete this song? This action cannot be undone.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+    <string name="song_deleted">Song deleted</string>
+    <string name="song_delete_failed">Failed to delete song</string>
+    <string name="share_song_text">Check out this song: %1$s by %2$s</string>
+    
 </resources>

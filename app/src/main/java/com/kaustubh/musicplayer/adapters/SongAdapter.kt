@@ -3,7 +3,9 @@ package com.kaustubh.musicplayer.adapters
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.PopupMenu
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.kaustubh.musicplayer.R
@@ -11,17 +13,19 @@ import com.kaustubh.musicplayer.models.Song
 
 class SongAdapter(
     private var songs: MutableList<Song>,
-    private val onSongClick: (Song, List<Song>) -> Unit
+    private val onSongClick: (Song, List<Song>) -> Unit,
+    private val onShareSong: (Song) -> Unit = {},
+    private val onDeleteSong: (Song) -> Unit = {}
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
     
     private var currentPlayingSongId: Long? = null
-    
-    inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+      inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val albumArt: ImageView = itemView.findViewById(R.id.song_album_art)
         val title: TextView = itemView.findViewById(R.id.song_title)
         val artist: TextView = itemView.findViewById(R.id.song_artist)
         val duration: TextView = itemView.findViewById(R.id.song_duration)
         val playingIndicator: ImageView = itemView.findViewById(R.id.playing_indicator)
+        val moreButton: ImageButton = itemView.findViewById(R.id.song_more_button)
           init {
             itemView.setOnClickListener {
                 val position = adapterPosition
@@ -29,6 +33,34 @@ class SongAdapter(
                     onSongClick(songs[position], songs.toList())
                 }
             }
+            
+            moreButton.setOnClickListener { view ->
+                val position = adapterPosition
+                if (position != RecyclerView.NO_POSITION) {
+                    showPopupMenu(view, songs[position])
+                }
+            }
+        }
+        
+        private fun showPopupMenu(anchorView: View, song: Song) {
+            val popup = PopupMenu(anchorView.context, anchorView)
+            popup.menuInflater.inflate(R.menu.song_options_menu, popup.menu)
+            
+            popup.setOnMenuItemClickListener { menuItem ->
+                when (menuItem.itemId) {
+                    R.id.action_share -> {
+                        onShareSong(song)
+                        true
+                    }
+                    R.id.action_delete -> {
+                        onDeleteSong(song)
+                        true
+                    }
+                    else -> false
+                }
+            }
+            
+            popup.show()
         }
     }
     
@@ -72,10 +104,17 @@ class SongAdapter(
             notifyItemChanged(newPosition)
         }
     }
-    
-    fun updateSongs(newSongs: List<Song>) {
+      fun updateSongs(newSongs: List<Song>) {
         songs.clear()
         songs.addAll(newSongs)
         notifyDataSetChanged()
+    }
+    
+    fun removeSong(song: Song) {
+        val position = songs.indexOfFirst { it.id == song.id }
+        if (position != -1) {
+            songs.removeAt(position)
+            notifyItemRemoved(position)
+        }
     }
 }
