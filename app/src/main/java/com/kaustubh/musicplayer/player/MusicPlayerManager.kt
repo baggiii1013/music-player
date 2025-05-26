@@ -11,7 +11,7 @@ import androidx.lifecycle.MutableLiveData
 import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.service.MusicService
 
-class MusicPlayerManager private constructor(private val context: Context) {
+class MusicPlayerManager private constructor(private val context: Context) : MusicService.PlaybackStateCallback {
     
     companion object {
         @Volatile
@@ -34,7 +34,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
     private val _currentPosition = MutableLiveData<Int>(0)
     private val _currentSongLiveData = MutableLiveData<Song?>()
     private val _allSongsLiveData = MutableLiveData<List<Song>>(emptyList())
-      val isPlaying: LiveData<Boolean> = _isPlaying
+    
+    val isPlaying: LiveData<Boolean> = _isPlaying
     val currentPosition: LiveData<Int> = _currentPosition
     val currentSongLiveData: LiveData<Song?> = _currentSongLiveData
     val allSongsLiveData: LiveData<List<Song>> = _allSongsLiveData
@@ -50,18 +51,24 @@ class MusicPlayerManager private constructor(private val context: Context) {
             val binder = service as MusicService.MusicBinder
             musicService = binder.getService()
             isBound = true
+            // Register callback to receive state changes from service
+            musicService?.setPlaybackStateCallback(this@MusicPlayerManager)
         }
         
         override fun onServiceDisconnected(name: ComponentName?) {
+            musicService?.setPlaybackStateCallback(null)
             musicService = null
             isBound = false
         }
     }
-      init {
+    
+    init {
         // Bind to MusicService for MediaSession support
         val intent = Intent(context, MusicService::class.java)
         context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
-    }    fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
+    }
+    
+    fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
         try {
             // Start the service to ensure it's running for Quick Settings
             val serviceIntent = Intent(context, MusicService::class.java)
@@ -112,7 +119,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
             e.printStackTrace()
         }
     }
-      fun playPause() {
+    
+    fun playPause() {
         // Try service first, fallback to local MediaPlayer
         if (isBound && musicService != null) {
             musicService!!.playPause()
@@ -129,7 +137,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
             }
         }
     }
-      fun stop() {
+    
+    fun stop() {
         // Stop both service and local MediaPlayer
         if (isBound && musicService != null) {
             musicService!!.stop()
@@ -142,7 +151,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
             _currentPosition.value = 0
         }
     }
-      fun seekTo(position: Int) {
+    
+    fun seekTo(position: Int) {
         // Seek on both service and local MediaPlayer
         if (isBound && musicService != null) {
             musicService!!.seekTo(position)
@@ -150,7 +160,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
         mediaPlayer?.seekTo(position)
         _currentPosition.value = position
     }
-      fun getCurrentPosition(): Int {
+    
+    fun getCurrentPosition(): Int {
         return if (isBound && musicService != null) {
             musicService!!.getCurrentPosition()
         } else {
@@ -181,15 +192,15 @@ class MusicPlayerManager private constructor(private val context: Context) {
     fun updateAllSongs(songs: List<Song>) {
         _allSongsLiveData.value = songs
     }
-      fun toggleShuffle() {
+    
+    fun toggleShuffle() {
         isShuffleEnabled = !isShuffleEnabled
         // Sync with service if available
         if (isBound && musicService != null) {
             musicService!!.setShuffleEnabled(isShuffleEnabled)
         }
     }
-    
-    fun toggleRepeat() {
+      fun toggleRepeat() {
         isRepeatEnabled = !isRepeatEnabled
         // Sync with service if available
         if (isBound && musicService != null) {
@@ -208,7 +219,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
     fun setPlaylist(playlist: List<Song>) {
         currentPlaylist = playlist
     }
-      fun nextSong() {
+    
+    fun nextSong() {
         if (isBound && musicService != null) {
             // Use service for next song to maintain MediaSession state
             musicService!!.nextSong()
@@ -227,7 +239,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
             }
         }
     }
-      fun previousSong() {
+    
+    fun previousSong() {
         if (isBound && musicService != null) {
             // Use service for previous song to maintain MediaSession state
             musicService!!.previousSong()
@@ -246,7 +259,8 @@ class MusicPlayerManager private constructor(private val context: Context) {
             }
         }
     }
-      fun isServiceConnected(): Boolean {
+    
+    fun isServiceConnected(): Boolean {
         return isBound && musicService != null
     }
     
@@ -277,5 +291,18 @@ class MusicPlayerManager private constructor(private val context: Context) {
         _isPlaying.value = false
         _currentPosition.value = 0
         _currentSongLiveData.value = null
+    }
+    
+    // Implement MusicService.PlaybackStateCallback
+    override fun onPlaybackStateChanged(isPlaying: Boolean) {
+        _isPlaying.value = isPlaying
+    }
+    
+    override fun onSongChanged(song: Song?) {
+        currentSong = song
+        _currentSongLiveData.value = song
+        if (song != null && currentPlaylist.isNotEmpty()) {
+            currentSongIndex = currentPlaylist.indexOf(song)
+        }
     }
 }

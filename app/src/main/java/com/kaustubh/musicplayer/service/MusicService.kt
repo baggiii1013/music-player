@@ -18,6 +18,7 @@ import androidx.media.session.MediaButtonReceiver
 import com.kaustubh.musicplayer.MainActivity
 import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.models.Song
+import android.util.Log
 
 class MusicService : Service() {
       companion object {
@@ -25,6 +26,14 @@ class MusicService : Service() {
         private const val CHANNEL_ID = "music_playback_channel"
         private const val MEDIA_SESSION_TAG = "MusicPlayerMediaSession"
     }
+    
+    // Callback interface for notifying state changes
+    interface PlaybackStateCallback {
+        fun onPlaybackStateChanged(isPlaying: Boolean)
+        fun onSongChanged(song: Song?)
+    }
+    
+    private var playbackCallback: PlaybackStateCallback? = null
     
     private var mediaPlayer: MediaPlayer? = null
     private var currentSong: Song? = null
@@ -34,9 +43,13 @@ class MusicService : Service() {
     
     // MediaSession for Android 15 Quick Settings integration
     private var mediaSession: MediaSessionCompat? = null
-    
-    inner class MusicBinder : Binder() {
+      inner class MusicBinder : Binder() {
         fun getService(): MusicService = this@MusicService
+    }
+    
+    fun setPlaybackStateCallback(callback: PlaybackStateCallback?) {
+        Log.d("MusicService", "Setting playback callback: ${callback != null}")
+        playbackCallback = callback
     }
       override fun onCreate() {
         super.onCreate()
@@ -96,8 +109,7 @@ class MusicService : Service() {
             
             currentPlaylist = playlist
             currentSongIndex = playlist.indexOf(song)
-            
-            mediaPlayer = MediaPlayer().apply {
+              mediaPlayer = MediaPlayer().apply {
                 setDataSource(applicationContext, song.uri)
                 prepareAsync()
                 setOnPreparedListener {
@@ -106,6 +118,9 @@ class MusicService : Service() {
                     updateMediaSessionMetadata(song)
                     updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
                     startForeground(NOTIFICATION_ID, createNotification())
+                    // Notify callback about song and state change
+                    playbackCallback?.onSongChanged(song)
+                    playbackCallback?.onPlaybackStateChanged(true)
                 }
                 setOnCompletionListener {
                     if (isRepeatEnabled) {
@@ -121,17 +136,12 @@ class MusicService : Service() {
         } catch (e: Exception) {
             e.printStackTrace()
         }
-    }
-      fun playPause() {
-        mediaPlayer?.let { player ->
-            if (player.isPlaying) {
-                player.pause()
-                updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
-            } else {
-                player.start()
-                updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
-            }
-            updateNotification()
+    }    fun playPause() {
+        Log.d("MusicService", "PlayPause called, current state: ${isPlaying()}")
+        if (isPlaying()) {
+            pauseMusic()
+        } else {
+            resumeMusic()
         }
     }fun nextSong() {
         if (currentPlaylist.isNotEmpty() && currentSongIndex < currentPlaylist.size - 1) {
@@ -161,16 +171,17 @@ class MusicService : Service() {
     
     fun playPrevious() {
         previousSong()
-    }
-      fun pauseMusic() {
+    }    fun pauseMusic() {
         mediaPlayer?.pause()
         updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
         updateNotification()
+        playbackCallback?.onPlaybackStateChanged(false)
     }
       fun resumeMusic() {
         mediaPlayer?.start()
         updatePlaybackState(PlaybackStateCompat.STATE_PLAYING)
         updateNotification()
+        playbackCallback?.onPlaybackStateChanged(true)
     }
     
     fun stop() {
