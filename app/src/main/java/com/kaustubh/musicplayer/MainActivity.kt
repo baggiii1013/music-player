@@ -2,15 +2,18 @@ package com.kaustubh.musicplayer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.view.WindowManager
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.kaustubh.musicplayer.fragments.EqualizerFragment
@@ -30,9 +33,13 @@ class MainActivity : AppCompatActivity() {
         private const val PERMISSION_REQUEST_CODE = 123
     }    override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // Enable edge-to-edge display first
+        enableEdgeToEdge()
+        setupStatusBar()
+        
         setContentView(R.layout.activity_main)
         
-        setupStatusBar()
         initViews()
         setupWindowInsets()
         requestPermissions()
@@ -42,25 +49,22 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             loadFragment(HomeFragment())
         }
-    }
-      private fun setupStatusBar() {
-        // Configure status bar for Apple Music style
-        window.statusBarColor = ContextCompat.getColor(this, R.color.apple_status_bar)
-        window.navigationBarColor = ContextCompat.getColor(this, R.color.apple_surface_primary)
+    }    private fun setupStatusBar() {
+        // Make the app truly edge-to-edge with transparent status bar
+        window.statusBarColor = Color.TRANSPARENT
+        window.navigationBarColor = Color.TRANSPARENT
         
-        // Make status bar content light (white icons/text) for dark background
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            // Clear light status bar flag for dark background
-            var flags = window.decorView.systemUiVisibility
-            flags = flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-            window.decorView.systemUiVisibility = flags
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            window.attributes.layoutInDisplayCutoutMode = 
+                WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES
         }
         
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            // Clear light navigation bar flag for dark background
-            var flags = window.decorView.systemUiVisibility
-            flags = flags and android.view.View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-            window.decorView.systemUiVisibility = flags
+        // Configure status bar content color for better visibility
+        val windowInsetsController = ViewCompat.getWindowInsetsController(window.decorView)
+        windowInsetsController?.let { controller ->
+            // Use light content (white icons) for dark backgrounds
+            controller.isAppearanceLightStatusBars = false
+            controller.isAppearanceLightNavigationBars = false
         }
     }
     
@@ -68,21 +72,27 @@ class MainActivity : AppCompatActivity() {
         bottomNavigation = findViewById(R.id.bottom_navigation)
         miniPlayer = findViewById(R.id.mini_player)
         miniPlayerController = MiniPlayerController(miniPlayer, this, this)
-    }
-      private fun setupWindowInsets() {
+    }    private fun setupWindowInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             val statusBars = insets.getInsets(WindowInsetsCompat.Type.statusBars())
+            val navigationBars = insets.getInsets(WindowInsetsCompat.Type.navigationBars())
             
-            // Apply proper padding to ensure status bar is visible
-            v.setPadding(systemBars.left, 0, systemBars.right, 0)
+            // Apply status bar padding to the fragment container for proper content spacing
+            val fragmentContainer = findViewById<View>(R.id.fragment_container)
+            fragmentContainer.setPadding(
+                0, // Remove horizontal padding to allow full-width gradients
+                statusBars.top,
+                0,
+                0
+            )
             
-            // Ensure bottom navigation respects navigation bar
+            // Ensure bottom navigation respects navigation bar and gets proper spacing
             bottomNavigation.setPadding(
                 bottomNavigation.paddingLeft,
                 bottomNavigation.paddingTop,
                 bottomNavigation.paddingRight,
-                bottomNavigation.paddingBottom + systemBars.bottom
+                bottomNavigation.paddingBottom + navigationBars.bottom
             )
             
             insets

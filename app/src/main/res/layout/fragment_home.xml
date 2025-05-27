@@ -17,13 +17,11 @@
             app:layout_scrollFlags="scroll|exitUntilCollapsed"
             app:contentScrim="@color/background_primary"
             app:expandedTitleMarginStart="24dp"
-            app:expandedTitleMarginBottom="24dp">
-
-            <!-- Background gradient -->
+            app:expandedTitleMarginBottom="24dp">            <!-- Background gradient -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/gradient_background"
+                android:background="@drawable/gradient_background_seamless"
                 app:layout_collapseMode="parallax" />
 
             <!-- Header content -->

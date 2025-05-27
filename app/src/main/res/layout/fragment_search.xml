@@ -14,13 +14,11 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="180dp"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
-
-            <!-- Gradient Background -->
+            app:layout_scrollFlags="scroll|exitUntilCollapsed">            <!-- Gradient Background -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/gradient_background"
+                android:background="@drawable/gradient_background_seamless"
                 app:layout_collapseMode="parallax" />
 
             <!-- Search Header Content -->

@@ -61,6 +61,11 @@
     <color name="gradient_end">#FF6B99</color>
     <color name="gradient_center">#FF9F0A</color>
     
+    <!-- Gradient colors for seamless status bar integration -->
+    <color name="gradient_start_seamless">#CC000000</color>
+    <color name="gradient_center_seamless">#99FF073A</color>
+    <color name="gradient_end_seamless">#99FF6B99</color>
+    
     <!-- Apple Music specific -->
     <color name="music_player_background">#1C1C1E</color>
     <color name="now_playing_background">#2C2C2E</color>
