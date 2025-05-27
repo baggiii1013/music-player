@@ -288,16 +288,27 @@ class MusicService : Service() {
     fun getCurrentPlaylist(): List<Song> {
         return currentPlaylist
     }
-    
-    private fun updateMediaSessionMetadata(song: Song) {
-        val metadata = MediaMetadataCompat.Builder()
+      private fun updateMediaSessionMetadata(song: Song) {
+        val metadataBuilder = MediaMetadataCompat.Builder()
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, song.title)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, song.artist)
             .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, song.album)
             .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, song.duration)
-            .build()
+
+        // Add album art to metadata for Quick Settings and lock screen controls
+        try {
+            val albumArt = com.kaustubh.musicplayer.utils.AlbumArtUtils.extractAlbumArt(this, song)
+            if (albumArt != null) {
+                metadataBuilder.putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, albumArt)
+                Log.d("MusicService", "Added album art to MediaSession metadata for ${song.title}")
+            } else {
+                Log.d("MusicService", "No album art found for ${song.title}")
+            }
+        } catch (e: Exception) {
+            Log.e("MusicService", "Error loading album art for MediaSession: ${e.message}")
+        }
         
-        mediaSession?.setMetadata(metadata)
+        mediaSession?.setMetadata(metadataBuilder.build())
     }
     
     private fun updatePlaybackState(state: Int) {
@@ -329,8 +340,7 @@ class MusicService : Service() {
             val notificationManager = getSystemService(NotificationManager::class.java)
             notificationManager.createNotificationChannel(channel)
         }
-    }
-      private fun createNotification(): Notification {
+    }    private fun createNotification(): Notification {
         val intent = Intent(this, MainActivity::class.java)
         val pendingIntent = PendingIntent.getActivity(
             this, 0, intent,
@@ -351,7 +361,7 @@ class MusicService : Service() {
             )
         }
         
-        return NotificationCompat.Builder(this, CHANNEL_ID)
+        val notificationBuilder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(currentSong?.title ?: getString(R.string.no_song_playing))
             .setContentText(currentSong?.artist ?: getString(R.string.unknown_artist))
             .setSmallIcon(R.drawable.ic_music_note)
@@ -373,7 +383,21 @@ class MusicService : Service() {
                     .setMediaSession(mediaSession?.sessionToken)
             )
             .setOnlyAlertOnce(true)
-            .build()
+
+        // Add album art as large icon for notification and Quick Settings
+        currentSong?.let { song ->
+            try {
+                val albumArt = com.kaustubh.musicplayer.utils.AlbumArtUtils.extractAlbumArt(this, song)
+                if (albumArt != null) {
+                    notificationBuilder.setLargeIcon(albumArt)
+                    Log.d("MusicService", "Added album art to notification for ${song.title}")
+                }
+            } catch (e: Exception) {
+                Log.e("MusicService", "Error loading album art for notification: ${e.message}")
+            }
+        }
+
+        return notificationBuilder.build()
     }
     
     private fun createPendingIntent(action: String): PendingIntent {

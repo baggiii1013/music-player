@@ -16,6 +16,8 @@ import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.player.MusicPlayerManager
 import com.kaustubh.musicplayer.utils.SongUtils
 import com.kaustubh.musicplayer.utils.ModernSongDeleter
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.IntentSenderRequest
 
 class SearchFragment : Fragment() {
     
@@ -24,6 +26,10 @@ class SearchFragment : Fragment() {
     private lateinit var songAdapter: SongAdapter
     private lateinit var musicPlayerManager: MusicPlayerManager
     private lateinit var modernSongDeleter: ModernSongDeleter
+      private val deleteRequestLauncher: ActivityResultLauncher<IntentSenderRequest> = 
+        registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.StartIntentSenderForResult()) { result ->
+            modernSongDeleter.handleDeleteResult(result.resultCode)
+        }
     
     private var allSongs = listOf<Song>()
     private var filteredSongs = listOf<Song>()
@@ -37,8 +43,12 @@ class SearchFragment : Fragment() {
     }    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         
-        // Initialize ModernSongDeleter
-        modernSongDeleter = ModernSongDeleter(requireActivity() as androidx.fragment.app.FragmentActivity)
+        // Initialize ModernSongDeleter with the pre-registered launcher
+        modernSongDeleter = ModernSongDeleter(
+            requireContext(),
+            parentFragmentManager,
+            deleteRequestLauncher
+        )
         
         initializeViews(view)
         setupSearchView()

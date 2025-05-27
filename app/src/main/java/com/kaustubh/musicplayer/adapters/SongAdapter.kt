@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.utils.AlbumArtUtils
+import com.kaustubh.musicplayer.player.MusicPlayerManager
 
 class SongAdapter(
     private var songs: MutableList<Song>,
@@ -20,14 +21,18 @@ class SongAdapter(
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
     
     private var currentPlayingSongId: Long? = null
-      inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+    private lateinit var musicPlayerManager: MusicPlayerManager
+
+    inner class SongViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val albumArt: ImageView = itemView.findViewById(R.id.song_album_art)
         val title: TextView = itemView.findViewById(R.id.song_title)
         val artist: TextView = itemView.findViewById(R.id.song_artist)
         val duration: TextView = itemView.findViewById(R.id.song_duration)
         val playingIndicator: ImageView = itemView.findViewById(R.id.playing_indicator)
+        // val favoriteIndicator: ImageView = itemView.findViewById(R.id.favorite_indicator) // TODO: Implement favorite functionality
         val moreButton: ImageButton = itemView.findViewById(R.id.song_more_button)
-          init {
+
+        init {
             itemView.setOnClickListener {
                 val position = adapterPosition
                 if (position != RecyclerView.NO_POSITION) {
@@ -64,16 +69,23 @@ class SongAdapter(
             popup.show()
         }
     }
-    
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SongViewHolder {
         val view = LayoutInflater.from(parent.context)
             .inflate(R.layout.item_song, parent, false)
+        
+        // Initialize MusicPlayerManager if not already done
+        if (!::musicPlayerManager.isInitialized) {
+            musicPlayerManager = MusicPlayerManager.getInstance(parent.context)
+        }
+        
         return SongViewHolder(view)
     }
     
     override fun onBindViewHolder(holder: SongViewHolder, position: Int) {
         val song = songs[position]
-          holder.title.text = song.title
+
+        holder.title.text = song.title
         holder.artist.text = song.artist
         holder.duration.text = song.getDurationString()
         
@@ -86,12 +98,20 @@ class SongAdapter(
             holder.title.setTextColor(holder.itemView.context.getColor(R.color.lavender_primary))
         } else {
             holder.playingIndicator.visibility = View.GONE
-            holder.title.setTextColor(holder.itemView.context.getColor(R.color.text_primary))
-        }
+            holder.title.setTextColor(holder.itemView.context.getColor(R.color.text_primary))        }
+        
+        // TODO: Implement favorite functionality
+        // Show/hide favorite indicator
+        // if (::musicPlayerManager.isInitialized && musicPlayerManager.isFavorite(song)) {
+        //     holder.favoriteIndicator.visibility = View.VISIBLE
+        // } else {
+        //     holder.favoriteIndicator.visibility = View.GONE
+        // }
     }
     
     override fun getItemCount(): Int = songs.size
-      fun setCurrentPlayingSong(songId: Long?) {
+
+    fun setCurrentPlayingSong(songId: Long?) {
         val oldPosition = songs.indexOfFirst { it.id == currentPlayingSongId }
         val newPosition = songs.indexOfFirst { it.id == songId }
         
@@ -104,7 +124,8 @@ class SongAdapter(
             notifyItemChanged(newPosition)
         }
     }
-      fun updateSongs(newSongs: List<Song>) {
+
+    fun updateSongs(newSongs: List<Song>) {
         songs.clear()
         songs.addAll(newSongs)
         notifyDataSetChanged()
@@ -116,5 +137,9 @@ class SongAdapter(
             songs.removeAt(position)
             notifyItemRemoved(position)
         }
+    }
+    
+    fun refreshFavorites() {
+        notifyDataSetChanged()
     }
 }
