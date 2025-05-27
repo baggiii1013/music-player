@@ -2,6 +2,7 @@ package com.kaustubh.musicplayer
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import androidx.activity.enableEdgeToEdge
@@ -87,12 +88,16 @@ class MainActivity : AppCompatActivity() {
             insets
         }
     }
-    
-    private fun requestPermissions() {
-        val permissions = arrayOf(
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.READ_MEDIA_AUDIO
-        )
+      private fun requestPermissions() {
+        val permissions = mutableListOf<String>().apply {
+            add(Manifest.permission.READ_EXTERNAL_STORAGE)
+            add(Manifest.permission.READ_MEDIA_AUDIO)
+            
+            // Only request WRITE_EXTERNAL_STORAGE for Android 9 and below
+            if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.P) {
+                add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            }
+        }
         
         val permissionsToRequest = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED

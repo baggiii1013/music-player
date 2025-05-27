@@ -15,6 +15,7 @@ import com.kaustubh.musicplayer.adapters.SongAdapter
 import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.player.MusicPlayerManager
 import com.kaustubh.musicplayer.utils.SongUtils
+import com.kaustubh.musicplayer.utils.ModernSongDeleter
 
 class SearchFragment : Fragment() {
     
@@ -22,6 +23,7 @@ class SearchFragment : Fragment() {
     private lateinit var searchResultsRecyclerView: RecyclerView
     private lateinit var songAdapter: SongAdapter
     private lateinit var musicPlayerManager: MusicPlayerManager
+    private lateinit var modernSongDeleter: ModernSongDeleter
     
     private var allSongs = listOf<Song>()
     private var filteredSongs = listOf<Song>()
@@ -32,10 +34,12 @@ class SearchFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.fragment_search, container, false)
-    }
-
-    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+    }    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        
+        // Initialize ModernSongDeleter
+        modernSongDeleter = ModernSongDeleter(requireActivity() as androidx.fragment.app.FragmentActivity)
+        
         initializeViews(view)
         setupSearchView()
         setupRecyclerView()
@@ -65,9 +69,8 @@ class SearchFragment : Fragment() {
             },
             onShareSong = { song ->
                 SongUtils.shareSong(requireContext(), song)
-            },
-            onDeleteSong = { song ->
-                SongUtils.deleteSong(requireContext(), song) { deletedSong ->
+            },            onDeleteSong = { song ->
+                modernSongDeleter.deleteSong(song) { deletedSong ->
                     // Remove from adapter and update the lists
                     songAdapter.removeSong(deletedSong)
                     

@@ -12,6 +12,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 import androidx.fragment.app.FragmentActivity
 import com.kaustubh.musicplayer.models.Song
+import com.kaustubh.musicplayer.ui.DeleteConfirmationDialog
 
 class ModernSongDeleter(private val activity: FragmentActivity) {
     
@@ -26,11 +27,27 @@ class ModernSongDeleter(private val activity: FragmentActivity) {
         ) { result ->
             handleDeleteResult(result.resultCode)
         }
-    
-    fun deleteSong(song: Song, onDeleted: (Song) -> Unit) {
+      fun deleteSong(song: Song, onDeleted: (Song) -> Unit) {
         pendingSong = song
         pendingCallback = onDeleted
         
+        // Show confirmation dialog first
+        val dialog = DeleteConfirmationDialog.newInstance(song)
+        dialog.setOnDeleteConfirmedListener(object : DeleteConfirmationDialog.OnDeleteConfirmedListener {
+            override fun onDeleteConfirmed() {
+                performActualDeletion(song, onDeleted)
+            }
+            
+            override fun onDeleteCancelled() {
+                // User cancelled, clear pending state
+                pendingSong = null
+                pendingCallback = null
+            }
+        })
+        dialog.show(activity.supportFragmentManager, "delete_confirmation")
+    }
+    
+    private fun performActualDeletion(song: Song, onDeleted: (Song) -> Unit) {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 // Android 11+ - Request permission through system dialog
