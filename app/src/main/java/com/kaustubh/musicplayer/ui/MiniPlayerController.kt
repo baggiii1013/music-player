@@ -9,6 +9,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.player.MusicPlayerManager
+import com.kaustubh.musicplayer.utils.AlbumArtUtils
 
 class MiniPlayerController(private val view: View, private val context: Context, private val lifecycleOwner: LifecycleOwner) {
     
@@ -50,13 +51,12 @@ class MiniPlayerController(private val view: View, private val context: Context,
             updateSong(song)
         }
     }
-    
-    fun updateSong(song: Song?) {
+      fun updateSong(song: Song?) {
         song?.let {
             songTitle.text = it.title
             artistName.text = it.artist
-            // TODO: Load album art from file
-            albumArt.setImageResource(R.drawable.default_album_art)
+            // Load album art using AlbumArtUtils
+            AlbumArtUtils.loadAlbumArt(context, it, albumArt)
             view.visibility = View.VISIBLE
         } ?: run {
             view.visibility = View.GONE

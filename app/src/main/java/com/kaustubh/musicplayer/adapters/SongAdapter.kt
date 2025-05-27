@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.models.Song
+import com.kaustubh.musicplayer.utils.AlbumArtUtils
 
 class SongAdapter(
     private var songs: MutableList<Song>,
@@ -72,13 +73,12 @@ class SongAdapter(
     
     override fun onBindViewHolder(holder: SongViewHolder, position: Int) {
         val song = songs[position]
-        
-        holder.title.text = song.title
+          holder.title.text = song.title
         holder.artist.text = song.artist
         holder.duration.text = song.getDurationString()
         
-        // Set album art placeholder
-        holder.albumArt.setImageResource(R.drawable.default_album_art)
+        // Load album art using AlbumArtUtils
+        AlbumArtUtils.loadAlbumArt(holder.itemView.context, song, holder.albumArt)
         
         // Show/hide playing indicator
         if (song.id == currentPlayingSongId) {

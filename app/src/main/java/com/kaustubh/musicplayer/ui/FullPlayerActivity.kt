@@ -16,6 +16,7 @@ import com.bumptech.glide.Glide
 import com.kaustubh.musicplayer.R
 import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.player.MusicPlayerManager
+import com.kaustubh.musicplayer.utils.AlbumArtUtils
 
 class FullPlayerActivity : AppCompatActivity() {
     
@@ -149,12 +150,8 @@ class FullPlayerActivity : AppCompatActivity() {
             updateShuffleButton()
             updateRepeatButton()
 
-            // Load album art using Glide
-            Glide.with(this)
-                .load(song.uri)
-                .placeholder(R.drawable.ic_music_note)
-                .error(R.drawable.ic_music_note)
-                .into(ivAlbumArt)
+            // Load album art using AlbumArtUtils
+            AlbumArtUtils.loadAlbumArt(this, song, ivAlbumArt)
         } ?: run {
             // Handle case where there is no current song
             Log.w("FullPlayerActivity", "No current song available")
