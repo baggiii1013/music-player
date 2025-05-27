@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.SeekBar
@@ -70,21 +71,25 @@ class FullPlayerActivity : AppCompatActivity() {
         btnRepeat = findViewById(R.id.btnRepeat)
         btnFavorite = findViewById(R.id.btnFavorite)
         btnPlaylist = findViewById(R.id.btnPlaylist)    }
-    
-    private fun setupClickListeners() {
+      private fun setupClickListeners() {
         btnBack.setOnClickListener {
             finish()
         }
         
         btnPlayPause.setOnClickListener {
+            Log.d("FullPlayerActivity", "Play/Pause button clicked")
             musicPlayerManager.playPause()
         }
         
         btnNext.setOnClickListener {
+            Log.d("FullPlayerActivity", "Next button clicked")
+            Log.d("FullPlayerActivity", "Service status: ${musicPlayerManager.getServiceStatus()}")
             musicPlayerManager.nextSong()
         }
         
         btnPrevious.setOnClickListener {
+            Log.d("FullPlayerActivity", "Previous button clicked")
+            Log.d("FullPlayerActivity", "Service status: ${musicPlayerManager.getServiceStatus()}")
             musicPlayerManager.previousSong()
         }
         
@@ -117,21 +122,24 @@ class FullPlayerActivity : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
     }
-    
-    private fun setupObservers() {
+      private fun setupObservers() {
         musicPlayerManager.currentSongLiveData.observe(this, Observer { song ->
+            Log.d("FullPlayerActivity", "Song changed observed: ${song?.title}")
             updateUI()
         })
         
         musicPlayerManager.isPlaying.observe(this, Observer { isPlaying ->
+            Log.d("FullPlayerActivity", "Playing state changed observed: $isPlaying")
             updatePlayPauseButton(isPlaying)
         })
         
         musicPlayerManager.currentPosition.observe(this, Observer { position ->
             // Update is handled by the handler runnable for smoother updates
         })
-    }    private fun updateUI() {
+    }private fun updateUI() {
         val currentSong = musicPlayerManager.getCurrentSong()
+        Log.d("FullPlayerActivity", "updateUI called - current song: ${currentSong?.title}")
+        
         currentSong?.let { song ->
             tvSongTitle.text = song.title
             tvArtistName.text = song.artist
@@ -149,6 +157,7 @@ class FullPlayerActivity : AppCompatActivity() {
                 .into(ivAlbumArt)
         } ?: run {
             // Handle case where there is no current song
+            Log.w("FullPlayerActivity", "No current song available")
             tvSongTitle.text = getString(R.string.no_song_playing)
             tvArtistName.text = ""
             tvCurrentTime.text = "0:00"
@@ -206,9 +215,18 @@ class FullPlayerActivity : AppCompatActivity() {
         super.onDestroy()
         handler.removeCallbacks(updateRunnable)
     }
-    
-    override fun onResume() {
+      override fun onResume() {
         super.onResume()
+        Log.d("FullPlayerActivity", "onResume - refreshing state")
+        Log.d("FullPlayerActivity", "Service status: ${musicPlayerManager.getServiceStatus()}")
+        
+        // Refresh the UI to make sure we have the latest state
+        updateUI()
+        
+        // Ensure we have the current song and playlist
+        val currentSong = musicPlayerManager.getCurrentSong()
+        Log.d("FullPlayerActivity", "Current song on resume: ${currentSong?.title}")
+        
         handler.post(updateRunnable)
     }
     

@@ -102,13 +102,14 @@ class MusicService : Service() {
             seekTo(pos.toInt())
         }
     }
-    
-    fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
+      fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
         try {
+            Log.d("MusicService", "playSong called: ${song.title}, playlist size: ${playlist.size}")
             mediaPlayer?.release()
             
             currentPlaylist = playlist
             currentSongIndex = playlist.indexOf(song)
+            Log.d("MusicService", "Set currentSongIndex to: $currentSongIndex")
               mediaPlayer = MediaPlayer().apply {
                 setDataSource(applicationContext, song.uri)
                 prepareAsync()
@@ -121,6 +122,7 @@ class MusicService : Service() {
                     // Notify callback about song and state change
                     playbackCallback?.onSongChanged(song)
                     playbackCallback?.onPlaybackStateChanged(true)
+                    Log.d("MusicService", "Song started playing: ${song.title}")
                 }
                 setOnCompletionListener {
                     if (isRepeatEnabled) {
@@ -132,36 +134,64 @@ class MusicService : Service() {
                         playNext()
                     }
                 }
+                setOnErrorListener { _, what, extra ->
+                    Log.e("MusicService", "MediaPlayer error: what=$what, extra=$extra")
+                    false
+                }
             }
         } catch (e: Exception) {
+            Log.e("MusicService", "Error playing song: ${e.message}", e)
             e.printStackTrace()
         }
-    }    fun playPause() {
+    }fun playPause() {
         Log.d("MusicService", "PlayPause called, current state: ${isPlaying()}")
         if (isPlaying()) {
             pauseMusic()
         } else {
             resumeMusic()
         }
-    }fun nextSong() {
-        if (currentPlaylist.isNotEmpty() && currentSongIndex < currentPlaylist.size - 1) {
-            currentSongIndex++
-            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
-        } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
-            // If shuffle is on, play a random song
-            currentSongIndex = (0 until currentPlaylist.size).random()
-            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+    }    fun nextSong() {
+        Log.d("MusicService", "nextSong() called - playlist size: ${currentPlaylist.size}, current index: $currentSongIndex")
+        if (currentPlaylist.isNotEmpty()) {
+            if (isShuffleEnabled) {
+                // If shuffle is on, play a random song
+                currentSongIndex = (0 until currentPlaylist.size).random()
+                Log.d("MusicService", "Shuffle mode: playing random song at index $currentSongIndex")
+                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+            } else if (currentSongIndex < currentPlaylist.size - 1) {
+                // Move to next song
+                currentSongIndex++
+                Log.d("MusicService", "Moving to next song at index $currentSongIndex")
+                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+            } else {
+                // At the end of playlist, loop back to beginning
+                currentSongIndex = 0
+                Log.d("MusicService", "Looping to beginning: playing song at index $currentSongIndex")
+                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+            }
+        } else {
+            Log.w("MusicService", "nextSong() called but currentPlaylist is empty")
         }
-    }
-    
-    fun previousSong() {
-        if (currentPlaylist.isNotEmpty() && currentSongIndex > 0) {
-            currentSongIndex--
-            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
-        } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
-            // If shuffle is on, play a random song
-            currentSongIndex = (0 until currentPlaylist.size).random()
-            playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+    }    fun previousSong() {
+        Log.d("MusicService", "previousSong() called - playlist size: ${currentPlaylist.size}, current index: $currentSongIndex")
+        if (currentPlaylist.isNotEmpty()) {
+            if (isShuffleEnabled) {
+                // If shuffle is on, play a random song
+                currentSongIndex = (0 until currentPlaylist.size).random()
+                Log.d("MusicService", "Shuffle mode: playing random song at index $currentSongIndex")
+                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+            } else if (currentSongIndex > 0) {
+                // Move to previous song
+                currentSongIndex--
+                Log.d("MusicService", "Moving to previous song at index $currentSongIndex")
+                playSong(currentPlaylist[currentSongIndex], currentPlaylist)            } else {
+                // At the beginning of playlist, loop to end
+                currentSongIndex = currentPlaylist.size - 1
+                Log.d("MusicService", "Looping to end: playing song at index $currentSongIndex")
+                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+            }
+        } else {
+            Log.w("MusicService", "previousSong() called but currentPlaylist is empty")
         }
     }
     
@@ -171,7 +201,9 @@ class MusicService : Service() {
     
     fun playPrevious() {
         previousSong()
-    }    fun pauseMusic() {
+    }
+    
+    fun pauseMusic() {
         mediaPlayer?.pause()
         updatePlaybackState(PlaybackStateCompat.STATE_PAUSED)
         updateNotification()

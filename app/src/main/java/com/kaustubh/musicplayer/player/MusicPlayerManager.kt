@@ -6,6 +6,7 @@ import android.content.Intent
 import android.content.ServiceConnection
 import android.media.MediaPlayer
 import android.os.IBinder
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.kaustubh.musicplayer.models.Song
@@ -44,8 +45,7 @@ class MusicPlayerManager private constructor(private val context: Context) : Mus
     private var isRepeatEnabled = false
     private var currentPlaylist: List<Song> = emptyList()
     private var currentSongIndex: Int = -1
-    
-    // Service connection for MusicService
+      // Service connection for MusicService
     private val serviceConnection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
             val binder = service as MusicService.MusicBinder
@@ -53,9 +53,18 @@ class MusicPlayerManager private constructor(private val context: Context) : Mus
             isBound = true
             // Register callback to receive state changes from service
             musicService?.setPlaybackStateCallback(this@MusicPlayerManager)
+            
+            // Sync current playlist with service if we have one
+            if (currentPlaylist.isNotEmpty() && currentSong != null) {
+                Log.d("MusicPlayerManager", "Service connected, syncing current playlist")
+                musicService?.setPlaylist(currentPlaylist)
+            }
+            
+            Log.d("MusicPlayerManager", "Service connected successfully")
         }
         
         override fun onServiceDisconnected(name: ComponentName?) {
+            Log.d("MusicPlayerManager", "Service disconnected")
             musicService?.setPlaybackStateCallback(null)
             musicService = null
             isBound = false
@@ -67,8 +76,7 @@ class MusicPlayerManager private constructor(private val context: Context) : Mus
         val intent = Intent(context, MusicService::class.java)
         context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
     }
-    
-    fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
+      fun playSong(song: Song, playlist: List<Song> = listOf(song)) {
         try {
             // Start the service to ensure it's running for Quick Settings
             val serviceIntent = Intent(context, MusicService::class.java)
@@ -82,12 +90,15 @@ class MusicPlayerManager private constructor(private val context: Context) : Mus
             
             // Also play through service for MediaSession support
             if (isBound && musicService != null) {
+                Log.d("MusicPlayerManager", "Playing song through service: ${song.title}, playlist size: ${playlist.size}")
                 musicService!!.playSong(song, playlist)
             } else {
+                Log.d("MusicPlayerManager", "Service not available, using local MediaPlayer")
                 // Fallback to local MediaPlayer if service not available
                 playLocalMediaPlayer(song)
             }
         } catch (e: Exception) {
+            Log.e("MusicPlayerManager", "Error playing song: ${e.message}", e)
             e.printStackTrace()
         }
     }
@@ -218,43 +229,101 @@ class MusicPlayerManager private constructor(private val context: Context) : Mus
     
     fun setPlaylist(playlist: List<Song>) {
         currentPlaylist = playlist
-    }
-    
-    fun nextSong() {
+    }    fun nextSong() {
+        Log.d("MusicPlayerManager", "nextSong() called - isBound: $isBound, service available: ${musicService != null}")
+        Log.d("MusicPlayerManager", "Current playlist size: ${currentPlaylist.size}, current index: $currentSongIndex")
+        
+        if (currentPlaylist.isEmpty()) {
+            Log.w("MusicPlayerManager", "nextSong() called but currentPlaylist is empty")
+            return
+        }
+        
         if (isBound && musicService != null) {
             // Use service for next song to maintain MediaSession state
-            musicService!!.nextSong()
-            // Update local state to match
-            currentSong = musicService!!.getCurrentSong()
-            _currentSongLiveData.value = currentSong
-            _isPlaying.value = musicService!!.isPlaying()
+            Log.d("MusicPlayerManager", "Calling service nextSong()")
+            try {
+                musicService!!.nextSong()
+                // Let the callback handle state updates
+                Log.d("MusicPlayerManager", "Service nextSong() call completed")
+            } catch (e: Exception) {
+                Log.e("MusicPlayerManager", "Error calling service nextSong: ${e.message}", e)
+                // Fallback to local logic if service fails
+                executeLocalNextSong()
+            }
         } else {
             // Fallback to local logic
-            if (currentPlaylist.isNotEmpty() && currentSongIndex < currentPlaylist.size - 1) {
-                currentSongIndex++
-                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
-            } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
-                currentSongIndex = (0 until currentPlaylist.size).random()
-                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
-            }
+            Log.d("MusicPlayerManager", "Service not available, using fallback logic for nextSong()")
+            executeLocalNextSong()
         }
     }
     
-    fun previousSong() {
+    private fun executeLocalNextSong() {
+        if (currentPlaylist.isNotEmpty()) {
+            val oldIndex = currentSongIndex
+            if (isShuffleEnabled) {
+                // If shuffle is on, play a random song
+                currentSongIndex = (0 until currentPlaylist.size).random()
+                Log.d("MusicPlayerManager", "Shuffle mode: playing random song at index $currentSongIndex")
+            } else if (currentSongIndex < currentPlaylist.size - 1) {
+                // Move to next song
+                currentSongIndex++
+                Log.d("MusicPlayerManager", "Moving to next song at index $currentSongIndex")
+            } else {
+                // At the end of playlist, loop back to beginning
+                currentSongIndex = 0
+                Log.d("MusicPlayerManager", "Looping to beginning: playing song at index $currentSongIndex")
+            }
+            
+            if (oldIndex != currentSongIndex && currentSongIndex < currentPlaylist.size) {
+                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
+            }
+        }
+    }    fun previousSong() {
+        Log.d("MusicPlayerManager", "previousSong() called - isBound: $isBound, service available: ${musicService != null}")
+        Log.d("MusicPlayerManager", "Current playlist size: ${currentPlaylist.size}, current index: $currentSongIndex")
+        
+        if (currentPlaylist.isEmpty()) {
+            Log.w("MusicPlayerManager", "previousSong() called but currentPlaylist is empty")
+            return
+        }
+        
         if (isBound && musicService != null) {
             // Use service for previous song to maintain MediaSession state
-            musicService!!.previousSong()
-            // Update local state to match
-            currentSong = musicService!!.getCurrentSong()
-            _currentSongLiveData.value = currentSong
-            _isPlaying.value = musicService!!.isPlaying()
+            Log.d("MusicPlayerManager", "Calling service previousSong()")
+            try {
+                musicService!!.previousSong()
+                // Let the callback handle state updates
+                Log.d("MusicPlayerManager", "Service previousSong() call completed")
+            } catch (e: Exception) {
+                Log.e("MusicPlayerManager", "Error calling service previousSong: ${e.message}", e)
+                // Fallback to local logic if service fails
+                executeLocalPreviousSong()
+            }
         } else {
             // Fallback to local logic
-            if (currentPlaylist.isNotEmpty() && currentSongIndex > 0) {
-                currentSongIndex--
-                playSong(currentPlaylist[currentSongIndex], currentPlaylist)
-            } else if (isShuffleEnabled && currentPlaylist.isNotEmpty()) {
+            Log.d("MusicPlayerManager", "Service not available, using fallback logic for previousSong()")
+            executeLocalPreviousSong()
+        }
+    }
+    
+    private fun executeLocalPreviousSong() {
+        if (currentPlaylist.isNotEmpty()) {
+            val oldIndex = currentSongIndex
+            if (isShuffleEnabled) {
+                // If shuffle is on, play a random song
                 currentSongIndex = (0 until currentPlaylist.size).random()
+                Log.d("MusicPlayerManager", "Shuffle mode: playing random song at index $currentSongIndex")
+            } else if (currentSongIndex > 0) {
+                // Move to previous song
+                currentSongIndex--
+                Log.d("MusicPlayerManager", "Moving to previous song at index $currentSongIndex")
+            } else {
+                // At the beginning of playlist, loop to end
+                currentSongIndex = currentPlaylist.size - 1
+                Log.d("MusicPlayerManager", "Looping to end: playing song at index $currentSongIndex")
+            }
+            
+            if (oldIndex != currentSongIndex && currentSongIndex < currentPlaylist.size) {
                 playSong(currentPlaylist[currentSongIndex], currentPlaylist)
             }
         }
@@ -292,17 +361,22 @@ class MusicPlayerManager private constructor(private val context: Context) : Mus
         _currentPosition.value = 0
         _currentSongLiveData.value = null
     }
-    
-    // Implement MusicService.PlaybackStateCallback
+      // Implement MusicService.PlaybackStateCallback
     override fun onPlaybackStateChanged(isPlaying: Boolean) {
+        Log.d("MusicPlayerManager", "Playback state changed: $isPlaying")
         _isPlaying.value = isPlaying
     }
     
     override fun onSongChanged(song: Song?) {
+        Log.d("MusicPlayerManager", "Song changed: ${song?.title}")
         currentSong = song
         _currentSongLiveData.value = song
         if (song != null && currentPlaylist.isNotEmpty()) {
-            currentSongIndex = currentPlaylist.indexOf(song)
+            val newIndex = currentPlaylist.indexOf(song)
+            if (newIndex != -1) {
+                currentSongIndex = newIndex
+                Log.d("MusicPlayerManager", "Updated currentSongIndex to: $currentSongIndex")
+            }
         }
     }
 }

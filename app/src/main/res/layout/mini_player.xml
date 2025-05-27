@@ -65,19 +65,28 @@
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
-        </LinearLayout>
-
-        <!-- Control buttons -->
+        </LinearLayout>        <!-- Control buttons -->
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
+            <ImageButton
+                android:id="@+id/mini_previous"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_marginEnd="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/previous"
+                android:padding="4dp"
+                android:src="@drawable/ic_skip_previous"
+                app:tint="@color/text_secondary" />
+
             <androidx.cardview.widget.CardView
                 android:layout_width="36dp"
                 android:layout_height="36dp"
-                android:layout_marginEnd="8dp"
+                android:layout_marginEnd="4dp"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="4dp"
                 app:cardBackgroundColor="@color/apple_red">

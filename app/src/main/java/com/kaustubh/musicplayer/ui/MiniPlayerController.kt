@@ -16,6 +16,7 @@ class MiniPlayerController(private val view: View, private val context: Context,
     private val songTitle: TextView = view.findViewById(R.id.mini_song_title)
     private val artistName: TextView = view.findViewById(R.id.mini_artist_name)
     private val playPauseButton: ImageButton = view.findViewById(R.id.mini_play_pause)
+    private val previousButton: ImageButton = view.findViewById(R.id.mini_previous)
     private val nextButton: ImageButton = view.findViewById(R.id.mini_next)
     
     private val musicPlayer = MusicPlayerManager.getInstance(context)
@@ -23,15 +24,17 @@ class MiniPlayerController(private val view: View, private val context: Context,
     init {
         setupClickListeners()
         observePlaybackState()
-    }
-    
-    private fun setupClickListeners() {
+    }    private fun setupClickListeners() {
         playPauseButton.setOnClickListener {
             musicPlayer.playPause()
         }
         
+        previousButton.setOnClickListener {
+            musicPlayer.previousSong()
+        }
+        
         nextButton.setOnClickListener {
-            // TODO: Implement next song functionality
+            musicPlayer.nextSong()
         }
           view.setOnClickListener {
             FullPlayerActivity.start(context)
