@@ -19,6 +19,7 @@ import com.kaustubh.musicplayer.player.MusicPlayerManager
 import com.kaustubh.musicplayer.MainActivity
 import com.kaustubh.musicplayer.utils.SongUtils
 import com.kaustubh.musicplayer.utils.ModernSongDeleter
+import com.kaustubh.musicplayer.ui.PlaylistSelectionDialog
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 
@@ -80,7 +81,8 @@ class HomeFragment : Fragment() {
             },
             onShareSong = { song ->
                 SongUtils.shareSong(requireContext(), song)
-            },            onDeleteSong = { song ->
+            },
+            onDeleteSong = { song ->
                 modernSongDeleter.deleteSong(song) { deletedSong ->
                     // Remove from adapter and update the main songs list
                     songAdapter.removeSong(deletedSong)
@@ -89,6 +91,10 @@ class HomeFragment : Fragment() {
                     // Update MusicPlayerManager with updated song list
                     MusicPlayerManager.getInstance(requireContext()).updateAllSongs(songs)
                 }
+            },
+            onAddToPlaylist = { song ->
+                val dialog = PlaylistSelectionDialog.newInstance(song)
+                dialog.show(parentFragmentManager, "PlaylistSelectionDialog")
             }
         )
         

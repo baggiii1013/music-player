@@ -17,8 +17,30 @@ class SongAdapter(
     private var songs: MutableList<Song>,
     private val onSongClick: (Song, List<Song>) -> Unit,
     private val onShareSong: (Song) -> Unit = {},
-    private val onDeleteSong: (Song) -> Unit = {}
+    private val onDeleteSong: (Song) -> Unit = {},
+    private val onAddToPlaylist: (Song) -> Unit = {}
 ) : RecyclerView.Adapter<SongAdapter.SongViewHolder>() {
+    
+    // Alternative constructor for SongClickListener interface
+    constructor(
+        songs: MutableList<Song>,
+        listener: SongClickListener,
+        onShareSong: (Song) -> Unit = {},
+        onDeleteSong: (Song) -> Unit = {},
+        onAddToPlaylist: (Song) -> Unit = {}
+    ) : this(
+        songs,
+        { song, songList -> listener.onSongClick(song, songList) },
+        onShareSong,
+        onDeleteSong,
+        onAddToPlaylist
+    )
+    
+    // Interface for click listener callbacks
+    interface SongClickListener {
+        fun onSongClick(song: Song, songList: List<Song>)
+        fun onSongLongClick(song: Song): Boolean
+    }
     
     private var currentPlayingSongId: Long? = null
     private lateinit var musicPlayerManager: MusicPlayerManager
@@ -51,9 +73,12 @@ class SongAdapter(
         private fun showPopupMenu(anchorView: View, song: Song) {
             val popup = PopupMenu(anchorView.context, anchorView)
             popup.menuInflater.inflate(R.menu.song_options_menu, popup.menu)
-            
-            popup.setOnMenuItemClickListener { menuItem ->
+              popup.setOnMenuItemClickListener { menuItem ->
                 when (menuItem.itemId) {
+                    R.id.action_add_to_playlist -> {
+                        onAddToPlaylist(song)
+                        true
+                    }
                     R.id.action_share -> {
                         onShareSong(song)
                         true

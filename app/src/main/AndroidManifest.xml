@@ -35,7 +35,14 @@
             android:name=".ui.FullPlayerActivity"
             android:exported="false"
             android:theme="@style/Theme.MusicPlayer" />
-          <service 
+        
+        <activity
+            android:name=".activities.PlaylistDetailActivity"
+            android:exported="false"
+            android:theme="@style/Theme.MusicPlayer"
+            android:parentActivityName=".MainActivity" />
+            
+        <service 
             android:name=".service.MusicService"
             android:exported="false"
             android:foregroundServiceType="mediaPlayback" />

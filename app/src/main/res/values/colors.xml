@@ -70,7 +70,13 @@
     <color name="music_player_background">#1C1C1E</color>
     <color name="now_playing_background">#2C2C2E</color>
     <color name="album_art_shadow">#00000080</color>
-      <!-- Bottom navigation -->
-    <color name="bottom_nav_selected">#FF073A</color>
+      <!-- Bottom navigation -->    <color name="bottom_nav_selected">#FF073A</color>
     <color name="bottom_nav_unselected">#8E8E93</color>
+      <!-- Playlist colors -->
+    <color name="playlist_icon_bg">#8E8E93</color>
+    
+    <!-- Missing colors for playlist functionality -->
+    <color name="background_color">#1C1C1E</color>
+    <color name="primary_color">#FF073A</color>
+    <color name="accent_color">#FF073A</color>
 </resources>

@@ -61,6 +61,9 @@ dependencies {
     implementation("androidx.media2:media2-session:1.3.0")
     implementation("androidx.media2:media2-player:1.3.0")
     
+    // Gson for JSON serialization (playlist persistence)
+    implementation("com.google.code.gson:gson:2.10.1")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

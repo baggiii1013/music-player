@@ -16,6 +16,7 @@ import com.kaustubh.musicplayer.models.Song
 import com.kaustubh.musicplayer.player.MusicPlayerManager
 import com.kaustubh.musicplayer.utils.SongUtils
 import com.kaustubh.musicplayer.utils.ModernSongDeleter
+import com.kaustubh.musicplayer.ui.PlaylistSelectionDialog
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.IntentSenderRequest
 
@@ -91,6 +92,10 @@ class SearchFragment : Fragment() {
                     // Update MusicPlayerManager with updated song list
                     musicPlayerManager.updateAllSongs(allSongs)
                 }
+            },
+            onAddToPlaylist = { song ->
+                val dialog = PlaylistSelectionDialog.newInstance(song)
+                dialog.show(parentFragmentManager, "PlaylistSelectionDialog")
             }
         )
         
